@@ -3,7 +3,8 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import ImagePicker from "@/components/ImagePicker";
-import DesaSelect, { useDesa } from "@/components/DesaSelect";
+import { useDesa } from "@/components/DesaSelect";
+import { Sparkle } from "@/components/icons";
 import StatusBanner, { useStatus } from "@/components/StatusBanner";
 
 type Status = "baik" | "kurang" | "tidak_dipilah";
@@ -57,7 +58,7 @@ function QrScanner({ onResult, onClose }: { onResult: (v: string) => void; onClo
 export default function PetugasPage() {
   const router = useRouter();
   const st = useStatus();
-  const [desa, setDesa] = useDesa();
+  const [desa] = useDesa();
   const [rumah, setRumah] = useState("");
   const [wadah, setWadah] = useState<"O" | "A" | "R">("O");
   const [foto, setFoto] = useState<string | null>(null);
@@ -121,14 +122,14 @@ export default function PetugasPage() {
     router.replace("/login?next=/petugas");
   }
 
-  if (!st?.session) return <p className="text-slate-500">Memeriksa sesi…</p>;
+  if (!st?.session) return <p className="page text-[#5f6368]">Memeriksa sesi…</p>;
 
   return (
-    <div className="space-y-4">
+    <div className="page space-y-5">
       <div className="flex flex-wrap items-end justify-between gap-2">
         <div>
-          <h1 className="text-2xl font-extrabold">Audit Wadah</h1>
-          <p className="text-slate-600">Pindai QR rumah, foto wadah, AI menilai, Anda yang memutuskan.</p>
+          <h1 className="page-title">Audit Wadah</h1>
+          <p className="page-sub">Pindai QR rumah, foto wadah, AI menilai, Anda yang memutuskan.</p>
         </div>
         <div className="flex gap-2 text-sm">
           <Link href="/qr" className="btn-ghost py-1.5">QR rumah</Link>
@@ -136,11 +137,10 @@ export default function PetugasPage() {
         </div>
       </div>
       <StatusBanner />
-      {info && <p className="rounded-lg bg-emerald-50 p-3 text-sm text-emerald-800" data-testid="info-simpan">{info} Total sesi ini: {tersimpan}.</p>}
+      {info && <p className="rounded-2xl bg-[#e6f4ea] px-4 py-3 text-sm text-[#0d652d]" data-testid="info-simpan">{info} Total sesi ini: {tersimpan}.</p>}
       <div className="card space-y-4">
-        <DesaSelect value={desa} onChange={setDesa} />
         <div>
-          <label className="text-sm font-semibold text-slate-700">Kode rumah</label>
+          <label className="text-sm font-semibold text-[#444746]">Kode rumah</label>
           <div className="mt-1 flex gap-2">
             <input className="input uppercase" placeholder="mis. KA-001" value={rumah} onChange={(e) => setRumah(e.target.value)} data-testid="input-rumah" />
             <button className="btn-ghost whitespace-nowrap" onClick={() => setScan((s) => !s)}>Pindai QR</button>
@@ -148,7 +148,7 @@ export default function PetugasPage() {
           {scan && <div className="mt-2"><QrScanner onResult={(v) => { setRumah(v.replace(/^KP:/, "")); setScan(false); }} onClose={() => setScan(false)} /></div>}
         </div>
         <div>
-          <span className="text-sm font-semibold text-slate-700">Jenis wadah</span>
+          <span className="text-sm font-semibold text-[#444746]">Jenis wadah</span>
           <div className="mt-1 grid grid-cols-3 gap-2">
             {(["O", "A", "R"] as const).map((w) => (
               <button key={w} onClick={() => setWadah(w)} className={wadah === w ? "btn" : "btn-ghost"}>
@@ -161,14 +161,15 @@ export default function PetugasPage() {
         <button className="btn w-full" disabled={!foto || !rumah.trim() || loading} onClick={analisis} data-testid="btn-audit">
           {loading && !hasil ? "AI menilai pilahan…" : "Nilai dengan AI"}
         </button>
-        {err && <p className="rounded-lg bg-red-50 p-3 text-sm text-red-700" role="alert">{err}</p>}
+        {err && <p className="rounded-2xl bg-[#fce8e6] px-4 py-3 text-sm text-[#a50e0e]" role="alert">{err}</p>}
       </div>
 
       {hasil && (
-        <div className="card space-y-3">
+        <div className="card space-y-3 bg-white shadow-[0_1px_3px_rgba(0,0,0,.12),0_4px_16px_rgba(0,0,0,.06)]">
+          <p className="flex items-center gap-2 text-sm font-medium text-[#444746]"><Sparkle className="h-5 w-5" /> Penilaian AI</p>
           <div className="flex items-center gap-3">
             <span className={`rounded-full px-3 py-1 font-bold text-white ${WARNA[hasil.status]}`}>{LABEL[hasil.status]}</span>
-            <span className="text-2xl font-extrabold">{hasil.skor}/100</span>
+            <span className="text-2xl font-medium">{hasil.skor}/100</span>
           </div>
           {!hasil.foto_layak && <p className="text-sm text-amber-700">Foto kurang jelas; pertimbangkan foto ulang.</p>}
           <p className="text-sm"><b>Catatan:</b> {hasil.catatan}</p>

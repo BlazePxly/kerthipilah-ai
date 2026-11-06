@@ -1,3 +1,4 @@
+import { connection } from "next/server";
 import { getSession } from "@/lib/auth";
 import { getDesa } from "@/lib/data";
 import { dbMode, feedbackStats, listAudits } from "@/lib/db";
@@ -5,6 +6,7 @@ import { errorResponse } from "@/lib/http";
 import { hitungStatistik } from "@/lib/stats";
 
 export async function GET(req: Request) {
+  await connection(); // selalu dinamis (data per sesi)
   try {
     const s = await getSession();
     if (!s) return Response.json({ error: "Silakan login." }, { status: 401 });

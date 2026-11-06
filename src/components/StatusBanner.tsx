@@ -1,16 +1,23 @@
 "use client";
 import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 
 type Status = { ai: boolean; model: string; login: boolean; penyimpanan: string; session: boolean };
 
+// Status server (AI aktif? sesi login?). Dimuat ulang setiap pindah halaman.
 export function useStatus() {
+  const path = usePathname();
   const [s, setS] = useState<Status | null>(null);
   useEffect(() => {
-    fetch("/api/status")
+    let batal = false;
+    fetch("/api/status", { cache: "no-store" })
       .then((r) => r.json())
-      .then(setS)
+      .then((j) => !batal && setS(j))
       .catch(() => {});
-  }, []);
+    return () => {
+      batal = true;
+    };
+  }, [path]);
   return s;
 }
 
@@ -18,7 +25,7 @@ export default function StatusBanner() {
   const s = useStatus();
   if (!s || s.ai) return null;
   return (
-    <div className="mb-4 rounded-xl border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900">
+    <div className="mb-4 rounded-2xl bg-[#fef7e0] px-4 py-3 text-sm text-[#7a5900]">
       Layanan AI belum aktif di server ini (ANTHROPIC_API_KEY belum diatur). Fitur AI akan menampilkan pesan galat.
     </div>
   );

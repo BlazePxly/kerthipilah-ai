@@ -15,8 +15,9 @@ Sampah organik tidak lagi diterima TPA Suwung, jadi sampah harus dipilah dan dio
 ## Key Features
 | Fitur | Pengguna | Keterangan |
 |---|---|---|
-| **Cek Sampah** | Warga | Foto → AI vision → kategori (organik/anorganik/residu/B3), wadah, tujuan, tindakan, alasan |
-| **Tanya Pilah** | Warga | Tanya-jawab yang hanya menjawab dari dokumen aturan desa, dengan sumber |
+| **Cek Sampah** | Warga | Di asisten utama, lampirkan foto lewat tombol **+** → AI vision → kategori (organik/anorganik/residu/B3), wadah, tujuan, tindakan, alasan |
+| **Tanya Pilah** | Warga | Ketik pertanyaan di asisten utama → jawaban hanya dari dokumen aturan desa, dengan sumber |
+| **Riwayat percakapan** | Warga | Tersimpan di browser (localStorage), tanpa foto |
 | **Audit Wadah** | Petugas (login) | Kode rumah/QR + foto wadah → AI memberi status & skor → petugas konfirmasi/koreksi → tersimpan |
 | **Dasbor TPS3R** | Pengelola (login) | % wadah baik, per banjar & per wadah, barang salah wadah terbanyak, % AI disetujui petugas |
 | **Ringkasan AI** | Pengelola | Ringkasan & rekomendasi pembinaan dari data agregat 7 hari |

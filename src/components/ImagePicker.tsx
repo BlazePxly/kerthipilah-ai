@@ -1,9 +1,10 @@
 "use client";
 import { useRef, useState } from "react";
+import { IconCamera } from "./icons";
 
 // Mengompres foto di browser (maks 1024 px, JPEG) sebelum dikirim.
 // Metadata EXIF (termasuk lokasi) otomatis hilang karena gambar digambar ulang lewat canvas.
-async function compress(file: File, max = 1024): Promise<string> {
+export async function compressImage(file: File, max = 1024): Promise<string> {
   const bitmap = await createImageBitmap(file);
   const scale = Math.min(1, max / Math.max(bitmap.width, bitmap.height));
   const canvas = document.createElement("canvas");
@@ -30,7 +31,7 @@ export default function ImagePicker({
     if (!f) return;
     if (!f.type.startsWith("image/")) return setErr("File harus berupa gambar.");
     try {
-      onChange(await compress(f));
+      onChange(await compressImage(f));
     } catch {
       setErr("Gambar tidak dapat dibaca. Coba foto lain (JPEG/PNG).");
     }
@@ -45,12 +46,12 @@ export default function ImagePicker({
         capture="environment"
         className="hidden"
         data-testid="file-input"
-        onChange={(e) => onFile(e.target.files?.[0])}
+        onChange={(e) => { onFile(e.target.files?.[0]); e.target.value = ""; }}
       />
       {value ? (
         <div className="space-y-2">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={value} alt="Foto yang dipilih" className="max-h-72 w-full rounded-xl object-contain bg-slate-100" />
+          <img src={value} alt="Foto yang dipilih" className="max-h-72 w-full rounded-2xl bg-[#f0f4f9] object-contain" />
           <button type="button" className="btn-ghost w-full" onClick={() => ref.current?.click()}>
             Ganti foto
           </button>
@@ -59,13 +60,13 @@ export default function ImagePicker({
         <button
           type="button"
           onClick={() => ref.current?.click()}
-          className="flex h-44 w-full flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-brand/40 bg-brand-soft/50 font-bold text-brand hover:bg-brand-soft"
+          className="flex h-40 w-full flex-col items-center justify-center gap-2 rounded-3xl border border-dashed border-[#c4c7c5] bg-[#f8fafd] font-medium text-[#444746] hover:bg-[#f0f4f9]"
         >
-          <span className="text-3xl" aria-hidden>📷</span>
+          <IconCamera className="h-7 w-7" />
           {label}
         </button>
       )}
-      {err && <p className="mt-2 text-sm text-red-600">{err}</p>}
+      {err && <p className="mt-2 text-sm text-[#c5221f]">{err}</p>}
     </div>
   );
 }
