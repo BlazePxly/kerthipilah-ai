@@ -28,7 +28,7 @@ export default function QrPage() {
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={c.url} alt={`QR ${c.kode}`} className="mx-auto w-full" />
             <p className="font-bold">{c.kode}</p>
-            <p className="text-xs text-[#5f6368]">Banjar {c.banjar}</p>
+            <p className="text-xs text-subtle">Banjar {c.banjar}</p>
           </div>
         ))}
       </div>

@@ -59,7 +59,7 @@ export default function DasborPage() {
     setRing(j);
   }
 
-  if (!d) return <p className="page text-[#5f6368]">{err || "Memuat dasbor…"}</p>;
+  if (!d) return <p className="page text-subtle">{err || "Memuat dasbor…"}</p>;
   const s = d.statistik;
 
   return (
@@ -76,14 +76,14 @@ export default function DasborPage() {
           <button
             key={h}
             onClick={() => setHari(h)}
-            className={`rounded-full border px-4 py-1.5 text-sm ${hari === h ? "border-[#d3e3fd] bg-[#d3e3fd] text-[#041e49]" : "border-[#c4c7c5] text-[#444746] hover:bg-[#f0f4f9]"}`}
+            className={`rounded-full border px-4 py-1.5 text-sm ${hari === h ? "border-primary-soft bg-primary-soft text-primary-ink" : "border-line text-muted hover:bg-surface"}`}
           >
             {h} hari
           </button>
         ))}
       </div>
       {d.penyimpanan === "file" && (
-        <p className="rounded-2xl bg-[#fef7e0] px-4 py-3 text-xs text-[#7a5900]">Mode penyimpanan file lokal (DATABASE_URL belum diatur). Data dapat hilang saat server dimulai ulang.</p>
+        <p className="rounded-2xl bg-warn-bg px-4 py-3 text-xs text-warn">Mode penyimpanan file lokal (DATABASE_URL belum diatur). Data dapat hilang saat server dimulai ulang.</p>
       )}
 
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
@@ -94,8 +94,8 @@ export default function DasborPage() {
           ["AI disetujui petugas", pct(s.persen_ai_disetujui_petugas)],
         ].map(([k, v]) => (
           <div key={k} className="card">
-            <p className="text-xs font-semibold text-[#5f6368]">{k}</p>
-            <p className="mt-1 text-[28px] font-medium text-[#1f1f1f]" data-testid={`kpi-${k}`}>{v}</p>
+            <p className="text-xs font-semibold text-subtle">{k}</p>
+            <p className="mt-1 text-[28px] font-medium text-ink" data-testid={`kpi-${k}`}>{v}</p>
           </div>
         ))}
       </div>
@@ -108,23 +108,23 @@ export default function DasborPage() {
               <div key={b.banjar}>
                 <div className="flex justify-between text-sm"><span>{b.banjar}</span><span>{pct(b.persen_baik)} · {b.audit} audit</span></div>
                 <div className="h-2.5 rounded bg-slate-100">
-                  <div className={`h-2.5 rounded ${(b.persen_baik ?? 0) < 60 ? "bg-amber-500" : "bg-[#0b57d0]"}`} style={{ width: `${b.persen_baik ?? 0}%` }} />
+                  <div className={`h-2.5 rounded ${(b.persen_baik ?? 0) < 60 ? "bg-amber-500" : "bg-primary"}`} style={{ width: `${b.persen_baik ?? 0}%` }} />
                 </div>
               </div>
             ))}
           </div>
-          <p className="mt-3 text-xs text-[#5f6368]">Per wadah: {s.per_wadah.map((w) => `${w.wadah} ${pct(w.persen_baik)}`).join(" · ")}</p>
+          <p className="mt-3 text-xs text-subtle">Per wadah: {s.per_wadah.map((w) => `${w.wadah} ${pct(w.persen_baik)}`).join(" · ")}</p>
         </div>
         <div className="card">
           <h2 className="font-medium">Barang salah wadah terbanyak</h2>
           {s.kontaminan_terbanyak.length === 0 ? (
-            <p className="mt-2 text-sm text-[#5f6368]">Belum ada data.</p>
+            <p className="mt-2 text-sm text-subtle">Belum ada data.</p>
           ) : (
             <ol className="mt-2 list-decimal pl-5 text-sm">
-              {s.kontaminan_terbanyak.map((k) => <li key={k.barang}>{k.barang} <span className="text-[#5f6368]">({k.jumlah}×)</span></li>)}
+              {s.kontaminan_terbanyak.map((k) => <li key={k.barang}>{k.barang} <span className="text-subtle">({k.jumlah}×)</span></li>)}
             </ol>
           )}
-          <p className="mt-3 text-xs text-[#5f6368]">Masukan warga atas jawaban AI: {d.feedback.total ? `${Math.round((d.feedback.benar / d.feedback.total) * 100)}% benar dari ${d.feedback.total}` : "belum ada"}</p>
+          <p className="mt-3 text-xs text-subtle">Masukan warga atas jawaban AI: {d.feedback.total ? `${Math.round((d.feedback.benar / d.feedback.total) * 100)}% benar dari ${d.feedback.total}` : "belum ada"}</p>
         </div>
       </div>
 
@@ -138,7 +138,7 @@ export default function DasborPage() {
           <div className="text-sm">
             <p>{ring.ringkasan}</p>
             <ul className="mt-2 list-disc pl-5">{ring.rekomendasi.map((r, i) => <li key={i}>{r}</li>)}</ul>
-            <p className="mt-2 text-xs text-[#5f6368]">Dibuat AI dari data agregat; periksa kembali sebelum dipakai di paruman.</p>
+            <p className="mt-2 text-xs text-subtle">Dibuat AI dari data agregat; periksa kembali sebelum dipakai di paruman.</p>
           </div>
         )}
       </div>
@@ -146,7 +146,7 @@ export default function DasborPage() {
       <div className="card overflow-x-auto">
         <h2 className="font-medium">Audit terbaru</h2>
         <table className="mt-2 w-full text-left text-sm">
-          <thead><tr className="text-[#5f6368]"><th>Waktu</th><th>Rumah</th><th>Banjar</th><th>Wadah</th><th>Status</th></tr></thead>
+          <thead><tr className="text-subtle"><th>Waktu</th><th>Rumah</th><th>Banjar</th><th>Wadah</th><th>Status</th></tr></thead>
           <tbody>
             {d.terbaru.map((a) => (
               <tr key={a.id} className="border-t">
@@ -157,7 +157,7 @@ export default function DasborPage() {
             ))}
           </tbody>
         </table>
-        {d.terbaru.length === 0 && <p className="mt-2 text-sm text-[#5f6368]">Belum ada audit. Mulai dari menu Audit Wadah.</p>}
+        {d.terbaru.length === 0 && <p className="mt-2 text-sm text-subtle">Belum ada audit. Mulai dari menu Audit Wadah.</p>}
       </div>
     </div>
   );

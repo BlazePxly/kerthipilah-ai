@@ -25,7 +25,7 @@ export default function StatusBanner() {
   const s = useStatus();
   if (!s || s.ai) return null;
   return (
-    <div className="mb-4 rounded-2xl bg-[#fef7e0] px-4 py-3 text-sm text-[#7a5900]">
+    <div className="mb-4 rounded-2xl bg-warn-bg px-4 py-3 text-sm text-warn">
       Layanan AI belum aktif di server ini (ANTHROPIC_API_KEY belum diatur). Fitur AI akan menampilkan pesan galat.
     </div>
   );

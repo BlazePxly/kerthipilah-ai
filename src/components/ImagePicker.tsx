@@ -51,7 +51,7 @@ export default function ImagePicker({
       {value ? (
         <div className="space-y-2">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={value} alt="Foto yang dipilih" className="max-h-72 w-full rounded-2xl bg-[#f0f4f9] object-contain" />
+          <img src={value} alt="Foto yang dipilih" className="max-h-72 w-full rounded-2xl bg-surface object-contain" />
           <button type="button" className="btn-ghost w-full" onClick={() => ref.current?.click()}>
             Ganti foto
           </button>
@@ -60,13 +60,13 @@ export default function ImagePicker({
         <button
           type="button"
           onClick={() => ref.current?.click()}
-          className="flex h-40 w-full flex-col items-center justify-center gap-2 rounded-3xl border border-dashed border-[#c4c7c5] bg-[#f8fafd] font-medium text-[#444746] hover:bg-[#f0f4f9]"
+          className="flex h-40 w-full flex-col items-center justify-center gap-2 rounded-3xl border border-dashed border-line bg-surface font-medium text-muted hover:bg-surface"
         >
           <IconCamera className="h-7 w-7" />
           {label}
         </button>
       )}
-      {err && <p className="mt-2 text-sm text-[#c5221f]">{err}</p>}
+      {err && <p className="mt-2 text-sm text-danger">{err}</p>}
     </div>
   );
 }

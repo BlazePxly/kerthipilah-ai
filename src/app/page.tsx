@@ -1,17 +1,19 @@
 "use client";
 import { Suspense, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import PromptBar from "@/components/PromptBar";
+import PromptBar, { usePhotoPicker } from "@/components/PromptBar";
 import { useDesa } from "@/components/DesaSelect";
-import { IconCopy, IconThumbDown, IconThumbUp, Sparkle } from "@/components/icons";
+import { IconCamera, IconCopy, IconImage, IconThumbDown, IconThumbUp, Sparkle } from "@/components/icons";
 import { getChat, newChatId, saveChat, type Chat, type Msg } from "@/lib/chats";
-import { KATEGORI_INFO } from "@/lib/data";
+import { KATEGORI_INFO, type Kategori } from "@/lib/data";
 
-const SARAN = [
-  { emoji: "📷", teks: "Foto sampahmu", aksi: "foto" as const },
-  { emoji: "🌼", teks: "Canang bekas dibuang ke mana?" },
-  { emoji: "🍜", teks: "Bungkus mi instan masuk wadah apa?" },
-  { emoji: "🗓️", teks: "Kapan sampah organik diangkut?" },
+const PERTANYAAN = ["Canang bekas dibuang ke mana?", "Bungkus mi instan masuk tong apa?", "Kapan sampah organik diangkut?", "Minyak jelantah dibuang di mana?"];
+
+const LEGENDA: { k: Kategori; contoh: string }[] = [
+  { k: "organik", contoh: "sisa makanan, daun, canang" },
+  { k: "anorganik", contoh: "botol, kardus, kaleng" },
+  { k: "residu", contoh: "sachet, popok, styrofoam" },
+  { k: "b3", contoh: "baterai, lampu, obat" },
 ];
 
 async function postJSON(url: string, body: unknown) {
@@ -23,43 +25,65 @@ async function postJSON(url: string, body: unknown) {
 
 function AiActions({ copyText, fb, onFb }: { copyText: string; fb?: boolean; onFb: (benar: boolean) => void }) {
   const [copied, setCopied] = useState(false);
+  const btn = "grid h-10 w-10 place-items-center rounded-full hover:bg-black/5";
   return (
-    <div className="mt-2 flex items-center gap-0.5 text-[#444746]">
+    <div className="mt-1 flex items-center text-muted">
       {fb ? (
-        <span className="px-2 text-xs text-[#5f6368]">Terima kasih atas masukannya</span>
+        <span className="px-1 py-2 text-xs text-subtle">Terima kasih atas masukannya</span>
       ) : (
         <>
-          <button aria-label="Jawaban bagus" title="Jawaban bagus" onClick={() => onFb(true)} className="grid h-9 w-9 place-items-center rounded-full hover:bg-black/5"><IconThumbUp className="h-[18px] w-[18px]" /></button>
-          <button aria-label="Jawaban keliru" title="Jawaban keliru" onClick={() => onFb(false)} className="grid h-9 w-9 place-items-center rounded-full hover:bg-black/5"><IconThumbDown className="h-[18px] w-[18px]" /></button>
+          <span className="mr-1 text-xs text-subtle">Benar?</span>
+          <button aria-label="Jawaban benar" onClick={() => onFb(true)} className={btn}><IconThumbUp className="h-[18px] w-[18px]" /></button>
+          <button aria-label="Jawaban keliru" onClick={() => onFb(false)} className={btn}><IconThumbDown className="h-[18px] w-[18px]" /></button>
         </>
       )}
       <button
         aria-label="Salin"
-        title={copied ? "Disalin" : "Salin"}
         onClick={() => { navigator.clipboard?.writeText(copyText); setCopied(true); setTimeout(() => setCopied(false), 1500); }}
-        className="grid h-9 w-9 place-items-center rounded-full hover:bg-black/5"
+        className={btn}
       >
         <IconCopy className="h-[18px] w-[18px]" />
       </button>
-      {copied && <span className="text-xs text-[#5f6368]">Disalin</span>}
+      {copied && <span className="text-xs text-subtle">Disalin</span>}
     </div>
   );
 }
 
-function AiMessage({ m, onFb }: { m: Extract<Msg, { role: "ai" }>; onFb: (benar: boolean) => void }) {
+function HasilItem({ it }: { it: { nama: string; kategori: Kategori; alasan: string; tindakan: string } }) {
+  const k = KATEGORI_INFO[it.kategori];
   return (
-    <div className="flex gap-4">
+    <div className="overflow-hidden rounded-3xl border border-black/5 bg-white shadow-[0_1px_2px_rgba(0,0,0,.06)]">
+      <div className={`flex items-center gap-3 px-4 py-3 ${k.soft}`}>
+        <span className={`grid h-11 w-11 shrink-0 place-items-center rounded-2xl text-xl ${k.warna}`} aria-hidden>{k.ikon}</span>
+        <div className="min-w-0">
+          <p className={`text-xs font-bold uppercase tracking-wide ${k.teks}`}>{k.label}</p>
+          <p className="truncate text-[17px] font-semibold text-ink">{it.nama}</p>
+        </div>
+      </div>
+      <ol className="space-y-2 px-4 py-3 text-[15px] leading-6">
+        <li className="flex gap-3"><span className="w-20 shrink-0 text-subtle">Buang ke</span><b className="font-semibold">{k.wadah}</b></li>
+        <li className="flex gap-3"><span className="w-20 shrink-0 text-subtle">Sebelumnya</span><span>{it.tindakan}</span></li>
+        <li className="flex gap-3"><span className="w-20 shrink-0 text-subtle">Lalu</span><span>{k.tujuan}</span></li>
+      </ol>
+      <p className="border-t border-black/5 px-4 py-2 text-sm text-subtle">Alasan: {it.alasan}</p>
+    </div>
+  );
+}
+
+function AiMessage({ m, onFb, onFotoLagi }: { m: Extract<Msg, { role: "ai" }>; onFb: (benar: boolean) => void; onFotoLagi: () => void }) {
+  return (
+    <div className="flex gap-3">
       <Sparkle className="mt-0.5 h-7 w-7 shrink-0" />
-      <div className="min-w-0 flex-1 pt-0.5 text-[15.5px] leading-7 text-[#1f1f1f]">
-        {m.kind === "error" && <p className="text-[#c5221f]">{m.text}</p>}
+      <div className="min-w-0 flex-1 pt-0.5 text-[16px] leading-7 text-ink">
+        {m.kind === "error" && <p className="rounded-2xl bg-danger-bg px-4 py-3 text-[15px] text-danger">{m.text}</p>}
         {m.kind === "tanya" && (
           <>
             <p className="whitespace-pre-line">{m.data.jawaban}</p>
-            {!m.data.dalam_cakupan && <p className="mt-1 text-sm text-[#7a5900]">Informasi ini belum ada di dokumen desa.</p>}
+            {!m.data.dalam_cakupan && <p className="mt-1 text-sm text-warn">Informasi ini belum ada di dokumen desa.</p>}
             {m.data.sumber.length > 0 && (
               <div className="mt-3 flex flex-wrap gap-2">
                 {m.data.sumber.map((s) => (
-                  <span key={s.id} title={s.sumber} className="rounded-full bg-[#f0f4f9] px-3 py-1 text-xs text-[#444746]">📄 {s.judul}</span>
+                  <span key={s.id} title={s.sumber} className="rounded-full bg-surface px-3 py-1 text-xs text-muted">📄 {s.judul}</span>
                 ))}
               </div>
             )}
@@ -70,28 +94,15 @@ function AiMessage({ m, onFb }: { m: Extract<Msg, { role: "ai" }>; onFb: (benar:
           <>
             <p>{m.data.pesan}</p>
             <div className="mt-3 space-y-3" data-testid="hasil-cek">
-              {m.data.items.map((it, i) => {
-                const k = KATEGORI_INFO[it.kategori];
-                return (
-                  <div key={i} className="rounded-3xl bg-[#f0f4f9] p-4">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <span className={`rounded-full px-3 py-0.5 text-sm font-semibold text-white ${k.warna}`}>{k.label}</span>
-                      <span className="font-semibold">{it.nama}</span>
-                    </div>
-                    <dl className="mt-2 grid gap-x-3 text-sm leading-6 sm:grid-cols-[88px_1fr]">
-                      <dt className="text-[#5f6368]">Wadah</dt><dd>{k.wadah}</dd>
-                      <dt className="text-[#5f6368]">Tujuan</dt><dd>{k.tujuan}</dd>
-                      <dt className="text-[#5f6368]">Lakukan</dt><dd>{it.tindakan}</dd>
-                      <dt className="text-[#5f6368]">Alasan</dt><dd>{it.alasan}</dd>
-                    </dl>
-                  </div>
-                );
-              })}
+              {m.data.items.map((it, i) => <HasilItem key={i} it={it} />)}
             </div>
-            <p className="mt-2 text-xs text-[#5f6368]">
+            <p className="mt-2 text-xs text-subtle">
               Keyakinan AI {Math.round(m.data.confidence * 100)}%{m.data.perlu_foto_ulang && " · coba foto ulang dengan cahaya cukup"}
             </p>
-            <AiActions copyText={m.data.items.map((i) => `${i.nama}: ${KATEGORI_INFO[i.kategori].label} – ${i.tindakan}`).join("\n")} fb={m.fb} onFb={onFb} />
+            <div className="mt-2 flex flex-wrap items-center gap-2">
+              <button onClick={onFotoLagi} className="btn-ghost min-h-10 py-1.5 text-sm"><IconCamera className="h-[18px] w-[18px]" /> Foto barang lain</button>
+            </div>
+            <AiActions copyText={m.data.items.map((i) => `${i.nama}: ${KATEGORI_INFO[i.kategori].wadah} – ${i.tindakan}`).join("\n")} fb={m.fb} onFb={onFb} />
           </>
         )}
       </div>
@@ -104,6 +115,7 @@ function ChatView({ id }: { id: string | null }) {
   const [desa] = useDesa();
   const [chat, setChat] = useState<Chat | null>(() => (id ? getChat(id) ?? null : null));
   const [loading, setLoading] = useState(false);
+  const [err, setErr] = useState("");
   const [prevId, setPrevId] = useState(id);
   // Sinkronkan saat URL berubah (pilih riwayat / "Percakapan baru"),
   // tapi jangan reset saat URL baru saja diisi id percakapan yang sedang berjalan.
@@ -141,6 +153,9 @@ function ChatView({ id }: { id: string | null }) {
     update(c);
   }
 
+  // Foto dari kartu aksi langsung dikirim ke AI (satu ketukan).
+  const picker = usePhotoPicker((img) => { setErr(""); send("", img); }, setErr);
+
   function feedback(idx: number, benar: boolean) {
     if (!chat) return;
     const m = chat.messages[idx];
@@ -154,66 +169,89 @@ function ChatView({ id }: { id: string | null }) {
 
   if (empty) {
     return (
-      <div className="mx-auto flex min-h-full w-full max-w-[760px] flex-col justify-center px-4 pb-10">
-        <h1 className="text-[36px] font-medium leading-tight tracking-tight sm:text-[44px]">
-          <span className="bg-gradient-to-r from-[#1e9e6a] via-[#1a9fbf] to-[#4b7bec] bg-clip-text text-transparent">Om Swastyastu.</span>
-          <br />
-          <span className="text-[#c4c7c5]">Sampah ini dibuang ke mana?</span>
+      <div className="mx-auto flex min-h-full w-full max-w-[680px] flex-col px-4 pb-8 pt-4 sm:justify-center sm:pt-0">
+        <h1 className="text-[30px] font-semibold leading-tight tracking-tight sm:text-[40px]">
+          <span className="bg-gradient-to-r from-[#0f7a43] via-[#2fa865] to-[#8cc63f] bg-clip-text text-transparent">Om Swastyastu!</span>
         </h1>
-        <div className="mt-8">
-          <PromptBar onSend={send} disabled={loading} autoFocus />
+        <p className="mt-1 text-[17px] text-muted sm:text-[19px]">Foto sampahnya, KerthiPilah beri tahu masuk tong mana.</p>
+
+        <div className="mt-6 grid grid-cols-[1.4fr_1fr] gap-3">
+          <button onClick={picker.openCamera} className="flex min-h-[112px] flex-col items-start justify-between rounded-3xl bg-primary p-4 text-left text-white shadow-[0_6px_18px_rgba(26,127,75,.28)] transition hover:bg-primary-hover active:scale-[.98]" data-testid="btn-foto-utama">
+            <IconCamera className="h-8 w-8" />
+            <span><span className="block text-[17px] font-semibold">Foto sampah</span><span className="block text-[13px] text-white/80">Langsung dicek AI</span></span>
+          </button>
+          <button onClick={picker.openGallery} className="flex min-h-[112px] flex-col items-start justify-between rounded-3xl bg-surface p-4 text-left text-ink transition hover:bg-surface-2 active:scale-[.98]">
+            <IconImage className="h-8 w-8 text-primary" />
+            <span><span className="block text-[17px] font-semibold">Dari galeri</span><span className="block text-[13px] text-subtle">Pilih foto</span></span>
+          </button>
         </div>
-        <div className="mt-4 flex flex-wrap gap-2">
-          {SARAN.map((s) => (
-            <button
-              key={s.teks}
-              onClick={() => (s.aksi === "foto" ? (document.querySelector('[data-testid="btn-plus"]') as HTMLButtonElement | null)?.click() : send(s.teks, null))}
-              className="rounded-full border border-[#dadce0] bg-white px-4 py-2 text-sm text-[#444746] hover:bg-[#f0f4f9]"
-            >
-              {s.emoji} {s.teks}
+        {picker.inputs}
+        {err && <p className="mt-2 text-sm text-danger">{err}</p>}
+
+        <div className="my-5 flex items-center gap-3 text-xs text-subtle"><span className="h-px flex-1 bg-line/70" /> atau tanya <span className="h-px flex-1 bg-line/70" /></div>
+        <PromptBar onSend={send} disabled={loading} />
+        <div className="-mx-4 mt-3 flex gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:none] sm:flex-wrap sm:overflow-visible">
+          {PERTANYAAN.map((q) => (
+            <button key={q} onClick={() => send(q, null)} className="min-h-11 shrink-0 rounded-full border border-line bg-white px-4 py-2 text-sm text-muted hover:bg-surface">
+              {q}
             </button>
           ))}
         </div>
-        <p className="mt-8 text-center text-xs text-[#5f6368]">
-          Memakai aturan pilah desa yang dipilih di atas. KerthiPilah bisa keliru, ikuti arahan petugas desa.
-        </p>
+
+        <div className="mt-7">
+          <p className="mb-2 text-sm font-semibold text-muted">Kenali tongnya</p>
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+            {LEGENDA.map(({ k, contoh }) => {
+              const info = KATEGORI_INFO[k];
+              return (
+                <div key={k} className={`rounded-2xl px-3 py-2.5 ${info.soft}`}>
+                  <p className={`flex items-center gap-2 text-sm font-semibold ${info.teks}`}><span className={`h-3 w-3 rounded-full ${info.warna}`} />{info.label}</p>
+                  <p className="mt-0.5 text-xs leading-5 text-muted">{contoh}</p>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+        <p className="mt-6 text-center text-xs text-subtle">Memakai aturan pilah desa yang dipilih di atas. AI bisa keliru, ikuti arahan petugas desa.</p>
       </div>
     );
   }
 
   return (
     <div className="flex min-h-full flex-col">
-      <div className="mx-auto w-full max-w-[760px] flex-1 space-y-8 px-4 pb-6 pt-4" data-testid="chat">
+      <div className="mx-auto w-full max-w-[720px] flex-1 space-y-7 px-4 pb-4 pt-3" data-testid="chat">
         {chat!.messages.map((m, i) =>
           m.role === "user" ? (
             <div key={i} className="flex flex-col items-end gap-2">
               {m.image && (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img src={m.image} alt="Foto sampah" className="max-h-60 max-w-[70%] rounded-3xl object-cover" />
+                <img src={m.image} alt="Foto sampah" className="max-h-56 max-w-[75%] rounded-3xl object-cover" />
               )}
-              {m.hadImage && !m.image && <span className="rounded-full bg-[#f0f4f9] px-3 py-1 text-xs text-[#5f6368]">📷 foto (tidak disimpan)</span>}
-              {m.text && <div className="max-w-[80%] rounded-3xl rounded-tr-md bg-[#e9eef6] px-5 py-3 text-[15.5px] text-[#1f1f1f]">{m.text}</div>}
+              {m.hadImage && !m.image && <span className="rounded-full bg-surface px-3 py-1 text-xs text-subtle">📷 foto (tidak disimpan)</span>}
+              {m.text && <div className="max-w-[85%] break-words rounded-3xl rounded-tr-md bg-primary-soft px-4 py-2.5 text-[16px] text-primary-ink">{m.text}</div>}
             </div>
           ) : (
-            <AiMessage key={i} m={m} onFb={(b) => feedback(i, b)} />
+            <AiMessage key={i} m={m} onFb={(b) => feedback(i, b)} onFotoLagi={picker.openCamera} />
           ),
         )}
         {loading && (
-          <div className="flex gap-4">
+          <div className="flex gap-3">
             <Sparkle className="h-7 w-7 shrink-0" spin />
             <div className="flex-1 space-y-2.5 pt-1.5">
-              <div className="h-3.5 w-11/12 animate-pulse rounded-full bg-gradient-to-r from-[#e8f0fe] via-[#d3e3fd] to-[#e8f0fe]" />
-              <div className="h-3.5 w-3/4 animate-pulse rounded-full bg-gradient-to-r from-[#e8f0fe] via-[#d3e3fd] to-[#e8f0fe]" />
-              <div className="h-3.5 w-1/2 animate-pulse rounded-full bg-gradient-to-r from-[#e8f0fe] via-[#d3e3fd] to-[#e8f0fe]" />
+              <p className="text-sm text-subtle">{chat!.messages.at(-1)?.role === "user" && (chat!.messages.at(-1) as { image?: string }).image ? "Memeriksa foto…" : "Membaca aturan desa…"}</p>
+              <div className="h-3.5 w-11/12 animate-pulse rounded-full bg-primary-soft" />
+              <div className="h-3.5 w-2/3 animate-pulse rounded-full bg-primary-soft" />
             </div>
           </div>
         )}
+        {picker.inputs}
+        {err && <p className="text-sm text-danger">{err}</p>}
         <div ref={endRef} />
       </div>
-      <div className="sticky bottom-0 bg-white px-4 pb-3 pt-2">
-        <div className="mx-auto max-w-[760px]">
+      <div className="safe-bottom sticky bottom-0 bg-gradient-to-t from-white via-white to-white/80 px-3 pt-2 sm:px-4">
+        <div className="mx-auto max-w-[720px]">
           <PromptBar onSend={send} disabled={loading} />
-          <p className="mt-2 text-center text-xs text-[#5f6368]">KerthiPilah bisa keliru. Ikuti arahan petugas desa bila ragu.</p>
+          <p className="mt-1.5 text-center text-[11px] text-subtle">AI bisa keliru. Ikuti arahan petugas desa bila ragu.</p>
         </div>
       </div>
     </div>

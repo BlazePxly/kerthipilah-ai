@@ -4,38 +4,54 @@
 
 export type Kategori = "organik" | "anorganik" | "residu" | "b3" | "tidak_yakin";
 
+// Warna mengikuti warna tong yang umum: hijau organik, kuning anorganik, abu residu, merah B3.
 export const KATEGORI_INFO: Record<
   Kategori,
-  { label: string; wadah: string; warna: string; tujuan: string }
+  { label: string; wadah: string; warna: string; soft: string; teks: string; ikon: string; tujuan: string }
 > = {
   organik: {
     label: "Organik",
-    wadah: "Wadah O (hijau)",
-    warna: "bg-emerald-600",
+    wadah: "Tong hijau (O)",
+    warna: "bg-[#2e9e57]",
+    soft: "bg-[#e3f4e8]",
+    teks: "text-[#155c31]",
+    ikon: "🍃",
     tujuan: "Teba modern / komposter rumah, atau diangkut ke TPS3R untuk kompos/maggot",
   },
   anorganik: {
     label: "Anorganik",
-    wadah: "Wadah A (kuning)",
-    warna: "bg-amber-500",
+    wadah: "Tong kuning (A)",
+    warna: "bg-[#e0a800]",
+    soft: "bg-[#fff4cc]",
+    teks: "text-[#6b5000]",
+    ikon: "♻️",
     tujuan: "Bank sampah atau TPS3R (dalam keadaan bersih & kering)",
   },
   residu: {
     label: "Residu",
-    wadah: "Wadah R (abu-abu)",
-    warna: "bg-slate-500",
+    wadah: "Tong abu-abu (R)",
+    warna: "bg-[#6b7570]",
+    soft: "bg-[#eceeed]",
+    teks: "text-[#3b423e]",
+    ikon: "🗑️",
     tujuan: "Diangkut sebagai residu ke TPST/TPA",
   },
   b3: {
     label: "B3 rumah tangga",
-    wadah: "Kantong terpisah (merah), jangan dicampur",
-    warna: "bg-red-600",
+    wadah: "Kantong merah terpisah",
+    warna: "bg-[#c62828]",
+    soft: "bg-[#fdeceb]",
+    teks: "text-[#8c1d18]",
+    ikon: "⚠️",
     tujuan: "Serahkan ke titik kumpul B3 di TPS3R/kantor desa",
   },
   tidak_yakin: {
     label: "Belum yakin",
     wadah: "Foto ulang lebih jelas",
-    warna: "bg-gray-400",
+    warna: "bg-[#9aa39d]",
+    soft: "bg-[#f1f3f2]",
+    teks: "text-[#47504a]",
+    ikon: "❔",
     tujuan: "Ambil foto satu barang, cahaya cukup, latar polos",
   },
 };

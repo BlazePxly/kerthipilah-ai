@@ -37,9 +37,9 @@ export function Sparkle({ className = "h-7 w-7", spin = false }: { className?: s
     <svg viewBox="0 0 28 28" className={`${className} ${spin ? "animate-spin [animation-duration:2.4s]" : ""}`} aria-hidden>
       <defs>
         <linearGradient id="kp-sparkle" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0" stopColor="#1e9e6a" />
-          <stop offset=".55" stopColor="#1a9fbf" />
-          <stop offset="1" stopColor="#4b7bec" />
+          <stop offset="0" stopColor="#0f7a43" />
+          <stop offset=".55" stopColor="#2fa865" />
+          <stop offset="1" stopColor="#9ccc3c" />
         </linearGradient>
       </defs>
       <path d="M14 1c.9 6.6 5.4 11.1 13 13-7.6 1.9-12.1 6.4-13 13-.9-6.6-5.4-11.1-13-13 7.6-1.9 12.1-6.4 13-13z" fill="url(#kp-sparkle)" />
