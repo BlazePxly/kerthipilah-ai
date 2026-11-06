@@ -26,19 +26,19 @@ Sampah organik tidak lagi diterima TPA Suwung, jadi sampah harus dipilah dan dio
 
 ## Tech Stack
 - Frontend & backend: Next.js 16 (App Router, Route Handlers), React 19, Tailwind CSS 4
-- AI: Anthropic Claude API (`@anthropic-ai/sdk`), structured output divalidasi Zod
+- AI: DeepSeek via API OpenAI-compatible — `deepseek-v4.1-flash` (teks) dan `deepseek-v4-flash-vision-exp` (vision); output JSON divalidasi Zod. Alternatif bawaan: Anthropic Claude (`@anthropic-ai/sdk`).
 - Database: PostgreSQL (Neon, `@neondatabase/serverless`); fallback file JSON untuk pengembangan lokal
 - Hosting: Vercel
 
 ## AI Implementation
 | Fitur | Input | Proses | Output |
 |---|---|---|---|
-| Cek Sampah | Foto (dikompres ≤1024 px, tanpa EXIF) + aturan desa | Claude (vision) + structured output (Zod) | `{items[{nama,kategori,alasan,tindakan}], confidence, perlu_foto_ulang, pesan}` |
-| Audit Wadah | Foto wadah + jenis wadah (O/A/R) + rubrik | Claude (vision) + structured output | `{status, skor, kontaminan[], catatan, saran_warga, foto_layak}` |
-| Tanya Pilah | Pertanyaan + dokumen hasil retrieval kata kunci | Claude, dibatasi hanya menjawab dari dokumen | `{jawaban, sumber[], dalam_cakupan}` |
-| Ringkasan | Statistik agregat (tanpa kode rumah/nama) | Claude | `{ringkasan, rekomendasi[]}` |
+| Cek Sampah | Foto (dikompres ≤1024 px, tanpa EXIF) + aturan desa | DeepSeek vision + output JSON tervalidasi Zod | `{items[{nama,kategori,alasan,tindakan}], confidence, perlu_foto_ulang, pesan}` |
+| Audit Wadah | Foto wadah + jenis wadah (O/A/R) + rubrik | DeepSeek vision + rubrik di prompt | `{status, skor, kontaminan[], catatan, saran_warga, foto_layak}` |
+| Tanya Pilah | Pertanyaan + dokumen hasil retrieval kata kunci | DeepSeek, dibatasi hanya menjawab dari dokumen | `{jawaban, sumber[], dalam_cakupan}` |
+| Ringkasan | Statistik agregat (tanpa kode rumah/nama) | DeepSeek | `{ringkasan, rekomendasi[]}` |
 
-- Model default `claude-opus-5-5` (dapat diganti lewat env `AI_MODEL`), effort `low` untuk respons cepat. Kode: [`src/lib/ai.ts`](src/lib/ai.ts).
+- Model diatur lewat env `AI_MODEL` dan `AI_VISION_MODEL` tanpa mengubah kode. JSON yang tidak sesuai skema diminta ulang satu kali. Kode: [`src/lib/ai.ts`](src/lib/ai.ts).
 - Aturan desa disisipkan ke prompt sehingga hasil mengikuti aturan setempat. Ganti data di [`src/lib/data.ts`](src/lib/data.ts) untuk desa lain.
 - Penanganan galat: kunci tidak valid, rate limit, timeout, penolakan (`refusal`), dan output tidak valid masing-masing menghasilkan pesan yang jelas. Aplikasi tidak macet.
 - Human-in-the-loop: hasil audit AI baru tersimpan setelah petugas mengonfirmasi atau mengoreksi.
@@ -46,14 +46,14 @@ Sampah organik tidak lagi diterima TPA Suwung, jadi sampah harus dipilah dan dio
 ## Architecture / Data Flow
 ```
 User (ponsel) → Frontend Next.js (kompres foto) → Route Handler /api/* (validasi, rate limit, auth)
-   → Claude API (vision/teks, structured output) → hasil JSON tervalidasi → UI
+   → DeepSeek API (vision/teks, OpenAI-compatible) → JSON divalidasi Zod → UI
    → PostgreSQL (audit, umpan balik) → Dasbor
 ```
 
 ## Installation / Run Instructions
 ```bash
 npm install
-cp .env.example .env.local   # isi ANTHROPIC_API_KEY, AUTH_SECRET, DEMO_USERNAME, DEMO_PASSWORD
+cp .env.example .env.local   # isi AI_BASE_URL, AI_API_KEY, AUTH_SECRET, DEMO_USERNAME, DEMO_PASSWORD
 npm run dev                  # http://localhost:3000
 ```
 `DATABASE_URL` opsional. Bila kosong, data tersimpan di `.data/db.json` (hanya untuk lokal).
@@ -76,7 +76,8 @@ Akun demo juri (peran petugas/pengelola) dikirim melalui form panitia. Kredensia
 
 ## Third-party Resources / Credits
 - [Next.js](https://nextjs.org) (MIT), React (MIT), Tailwind CSS (MIT)
-- [@anthropic-ai/sdk](https://github.com/anthropics/anthropic-sdk-typescript) (MIT), Anthropic Claude API
+- Model AI: DeepSeek (`deepseek-v4.1-flash`, `deepseek-v4-flash-vision-exp`) melalui API gateway OpenAI-compatible
+- [@anthropic-ai/sdk](https://github.com/anthropics/anthropic-sdk-typescript) (MIT), sebagai penyedia alternatif
 - [zod](https://zod.dev) (MIT), [@neondatabase/serverless](https://github.com/neondatabase/serverless) (MIT), [qrcode](https://github.com/soldair/node-qrcode) (MIT)
 - Font Nunito Sans (SIL OFL) via `next/font`
 - Rujukan kebijakan: Pergub Bali No. 47/2019; pemberitaan Antara & KLH (2025) tentang TPA Suwung
