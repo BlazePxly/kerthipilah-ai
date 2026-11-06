@@ -29,7 +29,11 @@ export const IconCopy = ({ className }: P) => (<svg {...base(className)}><rect x
 export const IconChevron = ({ className }: P) => (<svg {...base(className)}><path d="M6 9l6 6 6-6" /></svg>);
 export const IconLogout = ({ className }: P) => (<svg {...base(className)}><path d="M15 4h4v16h-4M10 8l-4 4 4 4M6 12h10" /></svg>);
 export const IconTrash = ({ className }: P) => (<svg {...base(className)}><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3" /></svg>);
-export const IconPin = ({ className }: P) => (<svg {...base(className)}><path d="M12 21s-7-6.2-7-11a7 7 0 0 1 14 0c0 4.8-7 11-7 11z" /><circle cx="12" cy="10" r="2.5" /></svg>);
+export const IconSearch = ({ className }: P) => (<svg {...base(className)}><circle cx="11" cy="11" r="7" /><path d="M20 20l-3.5-3.5" /></svg>);
+export const IconCalendar = ({ className }: P) => (<svg {...base(className)}><rect x="3" y="5" width="18" height="16" rx="3" /><path d="M3 10h18M8 3v4M16 3v4" /></svg>);
+export const IconTruck = ({ className }: P) => (<svg {...base(className)}><path d="M3 6h11v10H3zM14 10h4l3 3v3h-7" /><circle cx="7" cy="18" r="2" /><circle cx="17.5" cy="18" r="2" /></svg>);
+export const IconRefresh = ({ className }: P) => (<svg {...base(className)}><path d="M20 11a8 8 0 1 0-2.3 5.7M20 4v7h-7" /></svg>);
+export const IconPin =({ className }: P) => (<svg {...base(className)}><path d="M12 21s-7-6.2-7-11a7 7 0 0 1 14 0c0 4.8-7 11-7 11z" /><circle cx="12" cy="10" r="2.5" /></svg>);
 
 // Ikon "sparkle" khas asisten, dengan gradien merek KerthiPilah.
 export function Sparkle({ className = "h-7 w-7", spin = false }: { className?: string; spin?: boolean }) {

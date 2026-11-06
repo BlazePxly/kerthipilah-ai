@@ -1,6 +1,6 @@
-import { redirect } from "next/navigation";
+﻿import { redirect } from "next/navigation";
 
-// Tanya Pilah kini menyatu dengan asisten di halaman utama.
+// Tanya Pilah kini ada di Kamus (cari instan + Tanya AI).
 export default function TanyaPage() {
-  redirect("/");
+  redirect("/kamus");
 }

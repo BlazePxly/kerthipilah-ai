@@ -15,14 +15,14 @@ Sampah organik tidak lagi diterima TPA Suwung, jadi sampah harus dipilah dan dio
 ## Key Features
 | Fitur | Pengguna | Keterangan |
 |---|---|---|
-| **Cek Sampah** | Warga | Di asisten utama, lampirkan foto lewat tombol **+** → AI vision → kategori (organik/anorganik/residu/B3), wadah, tujuan, tindakan, alasan |
-| **Tanya Pilah** | Warga | Ketik pertanyaan di asisten utama → jawaban hanya dari dokumen aturan desa, dengan sumber |
-| **Riwayat percakapan** | Warga | Tersimpan di browser (localStorage), tanpa foto |
-| **Audit Wadah** | Petugas (login) | Kode rumah/QR + foto wadah → AI memberi status & skor → petugas konfirmasi/koreksi → tersimpan |
+| **Pindai** | Warga | Ketuk bingkai pemindai → foto → AI vision mengenali barang → tong yang benar terbuka di "papan 4 tong" + checklist sebelum buang → **Sudah kubuang** (tercatat di hitungan harian, tersimpan di browser) |
+| **Kamus pilah** | Warga | Cari nama barang → hasil instan dari aturan desa (tanpa AI, bisa offline). Bila tidak ada → **Tanya AI** menjawab hanya dari dokumen desa, dengan sumber |
+| **Jadwal angkut** | Warga | Kalender mingguan per jenis tong, "diangkut hari ini", dan tempat setor (TPS3R, bank sampah) |
+| **Rute audit** | Petugas (login) | Daftar rumah per banjar + progres. Ketuk rumah → foto wadah O/A/R → AI memberi status & skor → petugas memutuskan → simpan → otomatis lanjut ke wadah/rumah berikutnya |
 | **Dasbor TPS3R** | Pengelola (login) | % wadah baik, per banjar & per wadah, barang salah wadah terbanyak, % AI disetujui petugas |
 | **Ringkasan AI** | Pengelola | Ringkasan & rekomendasi pembinaan dari data agregat 7 hari |
 | **QR rumah** | Petugas | Cetak QR kode rumah untuk ditempel di wadah |
-| **Umpan balik** | Warga | Tombol benar/salah pada jawaban AI untuk evaluasi |
+| **Umpan balik** | Warga | Tombol "Hasil salah? Laporkan" untuk evaluasi akurasi AI |
 
 ## Tech Stack
 - Frontend & backend: Next.js 16 (App Router, Route Handlers), React 19, Tailwind CSS 4

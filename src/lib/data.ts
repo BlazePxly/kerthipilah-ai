@@ -66,10 +66,17 @@ export type Desa = {
   keterangan: string;
   banjar: string[];
   jadwal: string;
+  angkut: Angkut[];
+  fasilitas: Fasilitas[];
   aturan: Aturan[];
   dokumen: Dokumen[];
   rumah: Rumah[];
 };
+
+// hari: 0 = Minggu ... 6 = Sabtu
+export type Angkut = { kategori: Kategori; hari: number[]; jam: string; catatan?: string };
+export type Fasilitas = { nama: string; jenis: string; menerima: string; buka: string };
+export const NAMA_HARI = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
 
 const aturanUmum: Aturan[] = [
   { barang: "sisa makanan, nasi, sayur, kulit buah", kategori: "organik", catatan: "Tiriskan airnya dulu." },
@@ -85,7 +92,31 @@ const aturanUmum: Aturan[] = [
   { barang: "kantong kresek kotor/berminyak", kategori: "residu", catatan: "Kresek bersih & kering boleh ke anorganik." },
   { barang: "baterai, lampu bekas, obat kedaluwarsa, kaleng semprot, wadah racun serangga", kategori: "b3", catatan: "Jangan dicampur sampah lain; kumpulkan terpisah." },
   { barang: "minyak jelantah", kategori: "b3", catatan: "Simpan dalam botol tertutup; jangan dibuang ke saluran air. Serahkan ke titik kumpul jelantah bila tersedia." },
+  { barang: "cangkang telur, tulang, ampas kopi, ampas teh", kategori: "organik", catatan: "Boleh masuk teba/komposter; tulang besar lebih lama terurai." },
+  { barang: "kertas bungkus nasi berminyak, tisu makan kotor", kategori: "residu", catatan: "Kertas kotor/berminyak tidak bisa didaur ulang." },
+  { barang: "kotak susu/jus (karton berlapis), gelas kopi kertas", kategori: "residu", catatan: "Karton berlapis plastik/aluminium sulit didaur ulang; cek kebijakan TPS3R." },
+  { barang: "sedotan plastik, sendok plastik, masker", kategori: "residu", catatan: "Bungkus masker sebelum dibuang." },
+  { barang: "pecahan kaca, piring keramik pecah", kategori: "residu", catatan: "Bungkus koran dan beri tulisan 'BENDA TAJAM' agar petugas aman." },
+  { barang: "ponsel rusak, kabel, charger, elektronik kecil", kategori: "b3", catatan: "Termasuk limbah elektronik; serahkan ke titik kumpul B3/e-waste." },
 ];
+
+// Pencarian kamus: cocokkan kata kunci pada nama barang (tanpa AI, instan, bisa offline).
+const KATA_UMUM = new Set(["bekas", "sampah", "buang", "dibuang", "yang", "dan", "atau", "ke", "mana", "apa", "untuk", "dari", "di", "ini", "itu", "masuk", "tong", "wadah"]);
+
+export function cariAturan(desa: Desa, q: string): Aturan[] {
+  const words = q.toLowerCase().split(/[^a-z0-9]+/).filter((w) => w.length > 1 && !KATA_UMUM.has(w));
+  if (!words.length) return [];
+  const minimal = Math.ceil(words.length / 2); // minimal separuh kata kunci harus cocok
+  return desa.aturan
+    .map((a) => {
+      const hay = `${a.barang} ${a.kategori}`.toLowerCase();
+      const skor = words.reduce((n, w) => n + (hay.includes(w) ? 1 : 0), 0);
+      return { a, skor };
+    })
+    .filter((x) => x.skor >= minimal)
+    .sort((x, y) => y.skor - x.skor)
+    .map((x) => x.a);
+}
 
 const dokumenUmum: Dokumen[] = [
   {
@@ -121,6 +152,16 @@ export const DESA: Desa[] = [
     keterangan: "Data contoh untuk uji MVP. Bukan aturan desa nyata.",
     banjar: ["Kaja", "Tengah", "Kelod"],
     jadwal: "Organik diangkut Senin, Rabu, Jumat. Anorganik & residu diangkut Selasa dan Sabtu. B3 diserahkan ke titik kumpul TPS3R setiap Sabtu.",
+    angkut: [
+      { kategori: "organik", hari: [1, 3, 5], jam: "07.00" },
+      { kategori: "anorganik", hari: [2, 6], jam: "07.00" },
+      { kategori: "residu", hari: [2, 6], jam: "07.00" },
+      { kategori: "b3", hari: [6], jam: "08.00–11.00", catatan: "Antar sendiri ke titik kumpul TPS3R Demo" },
+    ],
+    fasilitas: [
+      { nama: "TPS3R Demo", jenis: "TPS3R", menerima: "Organik (kompos & maggot), anorganik bersih, B3 & jelantah", buka: "Setiap hari 07.00–15.00" },
+      { nama: "Bank Sampah Demo", jenis: "Bank sampah", menerima: "Botol PET, kardus, kertas, kaleng, botol kaca", buka: "Minggu 09.00–12.00" },
+    ],
     aturan: aturanUmum,
     dokumen: [
       ...dokumenUmum,
