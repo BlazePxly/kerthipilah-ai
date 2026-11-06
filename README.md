@@ -61,7 +61,7 @@ npm run dev                  # http://localhost:3000
 Deploy ke Vercel: import repository, isi environment variable yang sama, lalu hubungkan Neon Postgres (Storage) agar `DATABASE_URL` terisi.
 
 ## Deployment URL
-[TODO: isi URL Vercel]
+https://kerthipilah-ai.vercel.app
 
 ## Demo Account
 Akun demo juri (peran petugas/pengelola) dikirim melalui form panitia. Kredensial tidak disimpan di repository.
